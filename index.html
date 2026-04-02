@@ -115,6 +115,20 @@
         #transition-screen .btn {
             min-width: 140px;
         }
+        #question-timer,
+        #score-display {
+            font-size: 0.95rem;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        #question-timer {
+            color: #ffd166;
+        }
+        #score-display {
+            color: #8ce99a;
+        }
     </style>
 </head>
 <body>
@@ -132,6 +146,8 @@
             <div class="meta">
                 <span id="question-number">Question 1 of 40</span>
                 <span id="difficulty-label" class="difficulty easy">Easy</span>
+                <span id="question-timer">Time left: 10s</span>
+                <span id="score-display">Score: 0</span>
             </div>
             <h2 id="question-text">Question text goes here</h2>
             <div id="answer-buttons" class="btn-grid"></div>
@@ -218,8 +234,12 @@
         const transitionTitle = document.getElementById('transition-title');
         const transitionCopy = document.getElementById('transition-copy');
         const transitionTimerText = document.getElementById('transition-timer');
+        const questionTimerText = document.getElementById('question-timer');
+        const scoreDisplay = document.getElementById('score-display');
 
         let currentQuestionIndex = 0;
+        let questionCountdown = 10;
+        let questionTimerId = null;
         let score = 0;
         let answeredCount = 0;
         let currentDifficulty = '';
@@ -309,11 +329,51 @@
             transitionTimerText.textContent = `Continuing in ${transitionCountdown} second${transitionCountdown === 1 ? '' : 's'}...`;
         }
 
+        function startQuestionTimer() {
+            clearQuestionTimer();
+            questionCountdown = 10;
+            updateQuestionTimer();
+            questionTimerId = setInterval(() => {
+                questionCountdown -= 1;
+                if (questionCountdown <= 0) {
+                    handleTimeout();
+                } else {
+                    updateQuestionTimer();
+                }
+            }, 1000);
+        }
+
+        function clearQuestionTimer() {
+            if (questionTimerId !== null) {
+                clearInterval(questionTimerId);
+                questionTimerId = null;
+            }
+        }
+
+        function updateQuestionTimer() {
+            questionTimerText.textContent = `Time left: ${questionCountdown}s`;
+        }
+
+        function handleTimeout() {
+            clearQuestionTimer();
+            answeredCount += 1;
+            Array.from(answerButtons.children).forEach(answerButton => {
+                answerButton.disabled = true;
+                if (answerButton.textContent === questions[currentQuestionIndex].answer) {
+                    answerButton.classList.add('correct');
+                }
+            });
+            questionTimerText.textContent = 'Time is up!';
+            nextButton.textContent = currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'See Results';
+            nextButton.classList.remove('hidden');
+        }
+
         function showQuestion(question) {
             questionText.textContent = question.text;
             questionNumber.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
             difficultyLabel.textContent = question.difficulty;
             difficultyLabel.className = `difficulty ${question.difficulty}`;
+            scoreDisplay.textContent = `Score: ${score}`;
 
             question.choices.forEach(choice => {
                 const button = document.createElement('button');
@@ -322,9 +382,13 @@
                 button.addEventListener('click', () => selectAnswer(button, question));
                 answerButtons.appendChild(button);
             });
+
+            startQuestionTimer();
         }
 
         function resetState() {
+            clearQuestionTimer();
+            questionTimerText.textContent = 'Time left: 10s';
             nextButton.classList.add('hidden');
             nextButton.disabled = false;
             while (answerButtons.firstChild) {
@@ -333,11 +397,13 @@
         }
 
         function selectAnswer(button, question) {
+            clearQuestionTimer();
             answeredCount += 1;
             const selectedAnswer = button.textContent;
             const correct = selectedAnswer === question.answer;
             if (correct) {
-                score += 1;
+                score += questionCountdown;
+                scoreDisplay.textContent = `Score: ${score}`;
                 button.classList.add('correct');
             } else {
                 button.classList.add('wrong');
@@ -350,16 +416,18 @@
                 }
             });
 
+            questionTimerText.textContent = correct ? `+${questionCountdown} points` : '0 points';
             nextButton.textContent = currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'See Results';
             nextButton.classList.remove('hidden');
         }
 
         function showResults() {
             clearTransitionTimer();
+            clearQuestionTimer();
             quizScreen.classList.add('hidden');
             transitionScreen.classList.add('hidden');
             resultScreen.classList.remove('hidden');
-            resultText.textContent = `You scored ${score} out of ${answeredCount} answered questions.`;
+            resultText.textContent = `You scored ${score} points across ${answeredCount} answered questions.`;
         }
 
         function capitalize(text) {
