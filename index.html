@@ -159,7 +159,6 @@
         <div id="transition-screen" class="hidden">
             <h2 id="transition-title">Next difficulty is ready</h2>
             <p id="transition-copy">Get ready for the next set of questions.</p>
-            <p id="transition-timer">Continuing in 5 seconds...</p>
             <div style="text-align:center; margin-top: 24px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
                 <button id="continue-btn" class="btn btn-primary">Continue</button>
                 <button id="see-results-transition-btn" class="btn btn-secondary">See Results</button>
@@ -235,7 +234,6 @@
         const resultCorrect = document.getElementById('result-correct');
         const transitionTitle = document.getElementById('transition-title');
         const transitionCopy = document.getElementById('transition-copy');
-        const transitionTimerText = document.getElementById('transition-timer');
         const questionTimerText = document.getElementById('question-timer');
         const scoreDisplay = document.getElementById('score-display');
 
@@ -297,9 +295,6 @@
             transitionScreen.classList.remove('hidden');
             transitionTitle.textContent = `${capitalize(nextDifficulty)} level incoming`;
             transitionCopy.textContent = `You have completed the ${capitalize(currentDifficulty)} questions. Get ready for the ${capitalize(nextDifficulty)} section.`;
-            transitionCountdown = 5;
-            updateTransitionTimer();
-            startTransitionTimer();
         }
 
         function continueFromTransition() {
@@ -433,7 +428,7 @@
             transitionScreen.classList.add('hidden');
             resultScreen.classList.remove('hidden');
             resultPoints.textContent = `Points: ${score}`;
-            resultCorrect.textContent = `Correct answers: ${correctCount}`;
+            resultCorrect.textContent = `Correct answers: ${correctCount}/${answeredCount}`;
         }
 
         function capitalize(text) {
