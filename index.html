@@ -168,7 +168,8 @@
 
         <div id="result-screen" class="hidden">
             <h2>Quiz Completed</h2>
-            <p id="result-text">You scored X out of 40.</p>
+            <p id="result-points">Points: 0</p>
+            <p id="result-correct">Correct answers: 0</p>
             <button id="restart-btn" class="btn btn-primary">Restart Quiz</button>
         </div>
     </div>
@@ -230,7 +231,8 @@
         const questionNumber = document.getElementById('question-number');
         const difficultyLabel = document.getElementById('difficulty-label');
         const answerButtons = document.getElementById('answer-buttons');
-        const resultText = document.getElementById('result-text');
+        const resultPoints = document.getElementById('result-points');
+        const resultCorrect = document.getElementById('result-correct');
         const transitionTitle = document.getElementById('transition-title');
         const transitionCopy = document.getElementById('transition-copy');
         const transitionTimerText = document.getElementById('transition-timer');
@@ -242,6 +244,7 @@
         let questionTimerId = null;
         let score = 0;
         let answeredCount = 0;
+        let correctCount = 0;
         let currentDifficulty = '';
         let transitionCountdown = 5;
         let transitionTimerId = null;
@@ -256,6 +259,7 @@
             currentQuestionIndex = 0;
             score = 0;
             answeredCount = 0;
+            correctCount = 0;
             currentDifficulty = questions[0].difficulty;
             clearTransitionTimer();
             startScreen.classList.add('hidden');
@@ -403,6 +407,7 @@
             const correct = selectedAnswer === question.answer;
             if (correct) {
                 score += questionCountdown;
+                correctCount += 1;
                 scoreDisplay.textContent = `Score: ${score}`;
                 button.classList.add('correct');
             } else {
@@ -427,7 +432,8 @@
             quizScreen.classList.add('hidden');
             transitionScreen.classList.add('hidden');
             resultScreen.classList.remove('hidden');
-            resultText.textContent = `You scored ${score} points across ${answeredCount} answered questions.`;
+            resultPoints.textContent = `Points: ${score}`;
+            resultCorrect.textContent = `Correct answers: ${correctCount}`;
         }
 
         function capitalize(text) {
