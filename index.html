@@ -1,26 +1,285 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>World Cup Trivia</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(180deg, #0b2a45, #112d4e);
+            color: #f1f1f1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            width: min(900px, 95%);
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(14px);
+        }
+        h1, h2 {
+            margin: 0 0 16px;
+            text-align: center;
+        }
+        p {
+            line-height: 1.7;
+            margin: 8px 0 20px;
+            text-align: center;
+        }
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 14px 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        .btn-primary {
+            background: #3f72af;
+            color: #f8f9fa;
+        }
+        .btn-secondary {
+            background: #112d4e;
+            color: #f8f9fa;
+            border: 1px solid #3f72af;
+        }
+        .btn-grid {
+            display: grid;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .answer-btn {
+            width: 100%;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.08);
+            color: #f1f1f1;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .answer-btn.correct {
+            background: #2d6a4f;
+            border-color: #95d5b2;
+        }
+        .answer-btn.wrong {
+            background: #9d0208;
+            border-color: #ffadad;
+        }
+        .answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.9;
+        }
+        .meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            color: #cbd5e0;
+        }
+        .difficulty {
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .difficulty.easy { background: rgba(71, 147, 255, 0.18); }
+        .difficulty.medium { background: rgba(251, 191, 36, 0.18); }
+        .difficulty.hard { background: rgba(255, 87, 34, 0.18); }
+        .difficulty.expert { background: rgba(178, 34, 34, 0.18); }
+        .hidden {
+            display: none;
+        }
+        #result-screen {
+            text-align: center;
+            padding-top: 10px;
+        }
+        #result-screen p {
+            font-size: 1.1rem;
+            margin: 16px 0 28px;
+        }
+    </style>
 </head>
 <body>
-    <h1>World Cup Trivia</h1>
-    <p>Welcome to the World Cup Trivia!</p>
-    <p>Test your knowledge about the FIFA World Cup with our fun trivia questions. Click the button below to start the quiz!</p>
-    <button onclick="startQuiz()">Start Quiz</button>
+    <div class="container">
+        <h1>World Cup Trivia</h1>
+        <div id="start-screen">
+            <p>Welcome to the World Cup Trivia! Answer all 40 questions in a row as they get progressively harder.</p>
+            <p>This quiz covers winners, records, hosts, legendary players, and memorable World Cup moments.</p>
+            <div style="text-align:center; margin-top: 16px;">
+                <button id="start-btn" class="btn btn-primary">Start Quiz</button>
+            </div>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <div class="meta">
+                <span id="question-number">Question 1 of 40</span>
+                <span id="difficulty-label" class="difficulty easy">Easy</span>
+            </div>
+            <h2 id="question-text">Question text goes here</h2>
+            <div id="answer-buttons" class="btn-grid"></div>
+            <div style="text-align:right; margin-top: 22px;">
+                <button id="next-btn" class="btn btn-secondary hidden">Next Question</button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="hidden">
+            <h2>Quiz Completed</h2>
+            <p id="result-text">You scored X out of 40.</p>
+            <button id="restart-btn" class="btn btn-primary">Restart Quiz</button>
+        </div>
+    </div>
+
     <script>
-        function startQuiz() {
-            alert("Quiz started! Get ready to answer some World Cup trivia questions.");
-            // Here you can add your quiz logic, such as displaying questions and handling user answers.
-            if (confirm("Do you want to answer the first question?")) {
-                alert("Question 1: Which country has won the most FIFA World Cup titles?");
-                // You can add more questions and logic to handle user responses.
+        const questions = [
+            { text: 'Which country won the first ever FIFA World Cup in 1930?', choices: ['Brazil', 'Uruguay', 'Italy', 'Argentina'], answer: 'Uruguay', difficulty: 'easy' },
+            { text: 'How many teams competed in the 1998 World Cup in France?', choices: ['24', '32', '28', '16'], answer: '32', difficulty: 'easy' },
+            { text: 'Which country has hosted the World Cup twice as of 2022?', choices: ['Japan', 'South Africa', 'Mexico', 'Australia'], answer: 'Mexico', difficulty: 'easy' },
+            { text: 'True or false: Pelé won three World Cups with Brazil.', choices: ['True', 'False'], answer: 'True', difficulty: 'easy' },
+            { text: 'Which player scored the “Hand of God” goal in 1986?', choices: ['Diego Maradona', 'Gary Lineker', 'Paolo Rossi', 'Zinedine Zidane'], answer: 'Diego Maradona', difficulty: 'easy' },
+            { text: 'Which country won the 2010 World Cup?', choices: ['Spain', 'Netherlands', 'Germany', 'Brazil'], answer: 'Spain', difficulty: 'easy' },
+            { text: 'How many World Cup titles has Germany won as of 2022?', choices: ['2', '3', '4', '5'], answer: '4', difficulty: 'easy' },
+            { text: 'Which nation is known as the five-time World Cup champion?', choices: ['Italy', 'Brazil', 'Argentina', 'Germany'], answer: 'Brazil', difficulty: 'easy' },
+            { text: 'Who won the Golden Boot at the 2018 World Cup?', choices: ['Kylian Mbappé', 'Harry Kane', 'Antoine Griezmann', 'Lionel Messi'], answer: 'Harry Kane', difficulty: 'easy' },
+            { text: 'True or false: The World Cup trophy has always been the same design.', choices: ['True', 'False'], answer: 'False', difficulty: 'easy' },
+            { text: 'Which country was the runner-up at the 2014 World Cup?', choices: ['Argentina', 'Netherlands', 'Brazil', 'Spain'], answer: 'Argentina', difficulty: 'medium' },
+            { text: 'What is the maximum number of substitutions allowed per team at the 2022 World Cup?', choices: ['3', '5', '4', '6'], answer: '5', difficulty: 'medium' },
+            { text: 'Which player scored the winning goal in the 2010 World Cup final?', choices: ['Andrés Iniesta', 'David Villa', 'Xavi', 'Fernando Torres'], answer: 'Andrés Iniesta', difficulty: 'medium' },
+            { text: 'Which country hosted the 2002 World Cup along with South Korea?', choices: ['Japan', 'China', 'Australia', 'Qatar'], answer: 'Japan', difficulty: 'medium' },
+            { text: 'How many goals did Miroslav Klose score in World Cup history?', choices: ['14', '16', '12', '10'], answer: '16', difficulty: 'medium' },
+            { text: 'True or false: Italy won consecutive World Cups in 1934 and 1938.', choices: ['True', 'False'], answer: 'True', difficulty: 'medium' },
+            { text: 'Which country won the 1994 World Cup in the United States?', choices: ['Brazil', 'Italy', 'Germany', 'Argentina'], answer: 'Brazil', difficulty: 'medium' },
+            { text: 'Which stadium hosted the 2014 World Cup final?', choices: ['Maracanã', 'Wembley', 'Estadio Azteca', 'Rose Bowl'], answer: 'Maracanã', difficulty: 'medium' },
+            { text: 'Who became the youngest goalscorer in World Cup history in 2014?', choices: ['Pelé', 'Kylian Mbappé', 'Michael Owen', 'Lionel Messi'], answer: 'Kylian Mbappé', difficulty: 'medium' },
+            { text: 'True or false: The 1966 World Cup final was won by England.', choices: ['True', 'False'], answer: 'True', difficulty: 'medium' },
+            { text: 'Which country won the 1986 World Cup?', choices: ['Argentina', 'West Germany', 'Brazil', 'France'], answer: 'Argentina', difficulty: 'hard' },
+            { text: 'What is the name of the official match ball used at the 2018 World Cup?', choices: ['Telstar 18', 'Jabulani', 'Brazuca', 'Tango'], answer: 'Telstar 18', difficulty: 'hard' },
+            { text: 'Who scored four goals in a single World Cup match in 1938?', choices: ['Leônidas', 'Oldřich Nejedlý', 'Garrincha', 'Ernst Wilimowski'], answer: 'Leônidas', difficulty: 'hard' },
+            { text: 'Which country withdrew from the 1950 World Cup despite qualifying?', choices: ['India', 'China', 'Thailand', 'Turkey'], answer: 'India', difficulty: 'hard' },
+            { text: 'True or false: France won the World Cup in 1998 and 2018.', choices: ['True', 'False'], answer: 'True', difficulty: 'hard' },
+            { text: 'Which player won the Golden Ball in the 2006 World Cup?', choices: ['Zinedine Zidane', 'Ronaldinho', 'Fabio Cannavaro', 'Kaká'], answer: 'Zinedine Zidane', difficulty: 'hard' },
+            { text: 'What was the first African country to reach a World Cup quarterfinal?', choices: ['Nigeria', 'Senegal', 'Cameroon', 'Morocco'], answer: 'Morocco', difficulty: 'hard' },
+            { text: 'Which country hosted the 1978 World Cup?', choices: ['Argentina', 'Spain', 'Mexico', 'West Germany'], answer: 'Argentina', difficulty: 'hard' },
+            { text: 'Who scored the winning penalty for Italy in 2006?', choices: ['Fabio Grosso', 'Andrea Pirlo', 'Francesco Totti', 'Alessandro Del Piero'], answer: 'Fabio Grosso', difficulty: 'hard' },
+            { text: 'True or false: The 1954 World Cup final is known as the “Miracle of Bern.”', choices: ['True', 'False'], answer: 'True', difficulty: 'hard' },
+            { text: 'Which country first won the World Cup in South America in 1950?', choices: ['Uruguay', 'Brazil', 'Argentina', 'Chile'], answer: 'Uruguay', difficulty: 'expert' },
+            { text: 'Who won the 1970 World Cup with Brazil?', choices: ['Brazil', 'Italy', 'Germany', 'Argentina'], answer: 'Brazil', difficulty: 'expert' },
+            { text: 'Which player scored a hat-trick in the 1966 World Cup quarterfinal?', choices: ['Geoff Hurst', 'Bobby Charlton', 'Eusebio', 'Gerd Müller'], answer: 'Geoff Hurst', difficulty: 'expert' },
+            { text: 'How many World Cup finals did Johan Cruyff play in?', choices: ['1', '2', '3', '0'], answer: '1', difficulty: 'expert' },
+            { text: 'True or false: The World Cup was cancelled in 1942 and 1946 because of World War II.', choices: ['True', 'False'], answer: 'True', difficulty: 'expert' },
+            { text: 'Which country won the World Cup in 1958 with a 17-year-old Pelé?', choices: ['Brazil', 'Sweden', 'Germany', 'Italy'], answer: 'Brazil', difficulty: 'expert' },
+            { text: 'What nation won the 1990 World Cup?', choices: ['West Germany', 'Argentina', 'Brazil', 'Italy'], answer: 'West Germany', difficulty: 'expert' },
+            { text: 'Who is the only player to win three World Cup Golden Boots?', choices: ['Miroslav Klose', 'Ronaldo', 'Gerd Müller', 'Just Fontaine'], answer: 'Just Fontaine', difficulty: 'expert' },
+            { text: 'Which country hosted the World Cup in 1982?', choices: ['Spain', 'Mexico', 'Argentina', 'Italy'], answer: 'Spain', difficulty: 'expert' },
+            { text: 'Which player captained Brazil to the 1994 World Cup title?', choices: ['Dunga', 'Romário', 'Bebeto', 'Cafu'], answer: 'Dunga', difficulty: 'expert' },
+            { text: 'True or false: The 2018 final was decided by a penalty awarded after a VAR review.', choices: ['True', 'False'], answer: 'True', difficulty: 'expert' },
+            { text: 'Which captain lifted the World Cup trophy in 2002?', choices: ['Cafu', 'Marcel Desailly', 'Oliver Kahn', 'Ronaldo'], answer: 'Cafu', difficulty: 'expert' }
+        ];
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const startButton = document.getElementById('start-btn');
+        const nextButton = document.getElementById('next-btn');
+        const restartButton = document.getElementById('restart-btn');
+        const questionText = document.getElementById('question-text');
+        const questionNumber = document.getElementById('question-number');
+        const difficultyLabel = document.getElementById('difficulty-label');
+        const answerButtons = document.getElementById('answer-buttons');
+        const resultText = document.getElementById('result-text');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        startButton.addEventListener('click', startQuiz);
+        nextButton.addEventListener('click', () => {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                setNextQuestion();
             } else {
-                alert("No worries! You can start the quiz anytime by clicking the button.");
+                showResults();
+            }
+        });
+        restartButton.addEventListener('click', startQuiz);
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            startScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            nextButton.classList.add('hidden');
+            setNextQuestion();
+        }
+
+        function setNextQuestion() {
+            resetState();
+            showQuestion(questions[currentQuestionIndex]);
+        }
+
+        function showQuestion(question) {
+            questionText.textContent = question.text;
+            questionNumber.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+            difficultyLabel.textContent = question.difficulty;
+            difficultyLabel.className = `difficulty ${question.difficulty}`;
+
+            question.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.textContent = choice;
+                button.className = 'btn answer-btn';
+                button.addEventListener('click', () => selectAnswer(button, question));
+                answerButtons.appendChild(button);
+            });
+        }
+
+        function resetState() {
+            nextButton.classList.add('hidden');
+            nextButton.disabled = false;
+            while (answerButtons.firstChild) {
+                answerButtons.removeChild(answerButtons.firstChild);
             }
         }
 
-        function showAnswer() {
-            alert("The correct answer is Brazil, with 5 World Cup titles.");
+        function selectAnswer(button, question) {
+            const selectedAnswer = button.textContent;
+            const correct = selectedAnswer === question.answer;
+            if (correct) {
+                score++;
+                button.classList.add('correct');
+            } else {
+                button.classList.add('wrong');
+            }
+
+            Array.from(answerButtons.children).forEach(answerButton => {
+                answerButton.disabled = true;
+                if (answerButton.textContent === question.answer) {
+                    answerButton.classList.add('correct');
+                }
+            });
+
+            if (currentQuestionIndex < questions.length - 1) {
+                nextButton.textContent = 'Next Question';
+                nextButton.classList.remove('hidden');
+            } else {
+                nextButton.textContent = 'See Results';
+                nextButton.classList.remove('hidden');
+            }
+        }
+
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            resultText.textContent = `You scored ${score} out of ${questions.length}.`;
         }
     </script>
 </body>
