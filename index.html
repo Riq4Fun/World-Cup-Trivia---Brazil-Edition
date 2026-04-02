@@ -1,0 +1,27 @@
+<html>
+<head>
+    <title>World Cup Trivia</title>
+</head>
+<body>
+    <h1>World Cup Trivia</h1>
+    <p>Welcome to the World Cup Trivia!</p>
+    <p>Test your knowledge about the FIFA World Cup with our fun trivia questions. Click the button below to start the quiz!</p>
+    <button onclick="startQuiz()">Start Quiz</button>
+    <script>
+        function startQuiz() {
+            alert("Quiz started! Get ready to answer some World Cup trivia questions.");
+            // Here you can add your quiz logic, such as displaying questions and handling user answers.
+            if (confirm("Do you want to answer the first question?")) {
+                alert("Question 1: Which country has won the most FIFA World Cup titles?");
+                // You can add more questions and logic to handle user responses.
+            } else {
+                alert("No worries! You can start the quiz anytime by clicking the button.");
+            }
+        }
+
+        function showAnswer() {
+            alert("The correct answer is Brazil, with 5 World Cup titles.");
+        }
+    </script>
+</body>
+</html>
